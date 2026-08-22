@@ -267,7 +267,7 @@ class UwbDatasetBuilder:
             diff_vec = pred_np - ap_coord
             
             # C. 距離計算 (2026-08-19修正: 誤った再現係数0.25を0.5に訂正。
-            #    詳細はEAUFM-AutoUpdate進捗ログ§13参照)
+            #    詳細はEAUFM_AutoUpdate進捗ログ§13参照)
             predicted_dist = np.linalg.norm(diff_vec, axis=1) * 0.5
             dist_list.append(pd.Series(predicted_dist, name=f'pre_dist_{name}'))
             
@@ -370,7 +370,7 @@ class UwbDatasetBuilder:
         return df.loc[train_idx].sort_index(), df.loc[test_idx].sort_index()
 
     # ---------------------------------------------------------
-    # EAU-FM phase1.py 関数を複製
+    # EAU_FM phase1.py 関数を複製
     # ---------------------------------------------------------
 def calculate_distance_to_walls(predictions: pd.DataFrame, config: ExperimentConfig) -> pd.DataFrame:
     """
