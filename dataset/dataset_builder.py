@@ -266,9 +266,9 @@ class UwbDatasetBuilder:
             # ブロードキャストを利用：全データから同じAP座標を一気に引く
             diff_vec = pred_np - ap_coord
             
-            # C. 距離計算 (旧コード再現係数 0.25 を適用)
-            # np.linalg.norm(axis=1) で各行の距離を算出
-            predicted_dist = np.linalg.norm(diff_vec, axis=1) * 0.25
+            # C. 距離計算 (2026-08-19修正: 誤った再現係数0.25を0.5に訂正。
+            #    詳細はEAUFM-AutoUpdate進捗ログ§13参照)
+            predicted_dist = np.linalg.norm(diff_vec, axis=1) * 0.5
             dist_list.append(pd.Series(predicted_dist, name=f'pre_dist_{name}'))
             
             # D. 角度計算 (旧コードの arctan2(y_diff, x_diff) を再現)
@@ -499,16 +499,14 @@ def calculate_distance_to_aps(predictions: pd.DataFrame, ap_locations: Dict[str,
     # ノルム計算 (axis=2) -> (N, M)
     dists = np.linalg.norm(diff, axis=2)
 
-    # ======================= ⚠️ 後修正必須 ======================= #
-    # ★再現ポイント: 旧コードの「/ 2 * 0.5」に合わせて 0.25 を掛ける
-    dists_repro = dists * 0.25
+    # 2026-08-19修正: phase1.pyと同じ誤りを訂正(このモジュール内では未使用の
+    # 複製関数だが、将来の混乱を防ぐため揃えておく)
+    dists_repro = dists * 0.5
     
     # カラム名作成
     cols = [f'pre_dist_{i}' for i in range(len(ap_keys))]
     
-    # return pd.DataFrame(dists, columns=cols) 
     return pd.DataFrame(dists_repro, columns=cols)
-    # ======================= ⚠️ 後修正必須 ======================= #
 
 def calculate_azimuth_to_aps(predictions: pd.DataFrame, ap_locations: Dict[str, List[float]]) -> pd.DataFrame:
     """
