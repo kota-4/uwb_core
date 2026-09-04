@@ -307,6 +307,9 @@ class UwbDatasetBuilder:
             measured_dist_df = base_df[[f"{name}_rng_rng" for name in ap_names]] # rng_rng を優先
         elif f"{ap_names[0]}_rng_raw" in base_df.columns:
             measured_dist_df = base_df[[f"{name}_rng_raw" for name in ap_names]] # または rng_raw
+        else:
+            # どちらの列も見つからない場合の安全弁
+            raise ValueError("base_df に必要な rng_rng または rng_raw のカラムが存在しません。")
         
         wall_diff_dfs = []
         wall_ratio_dfs = []
@@ -333,7 +336,7 @@ class UwbDatasetBuilder:
         wall_ratio_df = pd.concat(wall_ratio_dfs, axis=1)
         
         # 全結合
-        final_df = pd.concat([
+        final_df = pd.concat([ # 次元数: 66 = 2((X,Y)) + 24(観測特徴量) + 40(幾何特徴量)
             base_df.reset_index(drop=True),
             pred_dist_df,
             diff_df,
@@ -344,6 +347,7 @@ class UwbDatasetBuilder:
             pred_rad_df
         ], axis=1)
 
+        # FP (Fingerprint) として各RPごとの平均値を計算 (X, Yでグループ化)
         avg_df = final_df.groupby(['X', 'Y']).mean()
         averaged_data = avg_df.values
 
